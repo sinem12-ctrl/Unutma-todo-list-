@@ -362,3 +362,375 @@ breakMinutesInput.addEventListener("change", () => {
 });
 
 renderPomodoro();
+
+const mainEl = document.querySelector("main");
+const viewTabs = document.querySelectorAll(".view-tab");
+const viewPanels = document.querySelectorAll(".view-panel");
+const CAL_STORAGE_KEY = "unutma-calendar-tasks";
+const MONTH_NAMES = [
+  "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+  "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık",
+];
+
+const calTitle = document.getElementById("cal-title");
+const calGrid = document.getElementById("cal-grid");
+const calDayLabel = document.getElementById("cal-day-label");
+const calForm = document.getElementById("cal-form");
+const calInput = document.getElementById("cal-input");
+const calAdd = document.getElementById("cal-add");
+const calTasks = document.getElementById("cal-tasks");
+const calPrev = document.getElementById("cal-prev");
+const calNext = document.getElementById("cal-next");
+
+const today = new Date();
+let calYear = today.getFullYear();
+let calMonth = today.getMonth();
+let selectedDateKey = null;
+let calendarTasks = {};
+
+function toDateKey(year, month, day) {
+  return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function formatDateLabel(dateKey) {
+  const [y, m, d] = dateKey.split("-").map(Number);
+  return `${d} ${MONTH_NAMES[m - 1]} ${y}`;
+}
+
+function loadCalendarTasks() {
+  try {
+    const saved = localStorage.getItem(CAL_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : {};
+  } catch {
+    localStorage.removeItem(CAL_STORAGE_KEY);
+    return {};
+  }
+}
+
+function saveCalendarTasks() {
+  localStorage.setItem(CAL_STORAGE_KEY, JSON.stringify(calendarTasks));
+}
+
+selectedDateKey = toDateKey(today.getFullYear(), today.getMonth(), today.getDate());
+calendarTasks = loadCalendarTasks();
+
+function switchView(viewName) {
+  viewTabs.forEach((tab) => {
+    tab.classList.toggle("is-active", tab.dataset.view === viewName);
+  });
+  viewPanels.forEach((panel) => {
+    const active = panel.dataset.view === viewName;
+    panel.classList.toggle("is-active", active);
+    panel.hidden = !active;
+  });
+  mainEl.classList.toggle("is-calendar", viewName === "calendar");
+  mainEl.classList.toggle("is-kanban", viewName === "kanban");
+  if (viewName === "calendar") renderCalendar();
+  if (viewName === "kanban") renderKanban();
+}
+
+viewTabs.forEach((tab) => {
+  tab.addEventListener("click", () => switchView(tab.dataset.view));
+});
+
+function renderCalendar() {
+  calTitle.textContent = `${MONTH_NAMES[calMonth]} ${calYear}`;
+  calGrid.innerHTML = "";
+
+  const firstDay = new Date(calYear, calMonth, 1);
+  let startWeekday = firstDay.getDay() - 1;
+  if (startWeekday < 0) startWeekday = 6;
+
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const prevMonthDays = new Date(calYear, calMonth, 0).getDate();
+
+  for (let i = 0; i < 42; i += 1) {
+    const cell = document.createElement("button");
+    cell.type = "button";
+    cell.className = "cal-cell";
+
+    let cellYear = calYear;
+    let cellMonth = calMonth;
+    let cellDay;
+
+    if (i < startWeekday) {
+      cellDay = prevMonthDays - startWeekday + i + 1;
+      cellMonth = calMonth - 1;
+      if (cellMonth < 0) {
+        cellMonth = 11;
+        cellYear -= 1;
+      }
+      cell.classList.add("is-muted");
+    } else if (i >= startWeekday + daysInMonth) {
+      cellDay = i - startWeekday - daysInMonth + 1;
+      cellMonth = calMonth + 1;
+      if (cellMonth > 11) {
+        cellMonth = 0;
+        cellYear += 1;
+      }
+      cell.classList.add("is-muted");
+    } else {
+      cellDay = i - startWeekday + 1;
+    }
+
+    const key = toDateKey(cellYear, cellMonth, cellDay);
+    const daySpan = document.createElement("span");
+    daySpan.className = "cal-cell-day";
+    daySpan.textContent = String(cellDay);
+    cell.appendChild(daySpan);
+
+    if (
+      cellYear === today.getFullYear() &&
+      cellMonth === today.getMonth() &&
+      cellDay === today.getDate()
+    ) {
+      cell.classList.add("is-today");
+    }
+    if (key === selectedDateKey) cell.classList.add("is-selected");
+
+    const tasks = calendarTasks[key] || [];
+    if (tasks.length) {
+      const list = document.createElement("div");
+      list.className = "cal-cell-tasks";
+      tasks.slice(0, 3).forEach((task) => {
+        const item = document.createElement("span");
+        item.className = `cal-cell-task${task.done ? " is-done" : ""}`;
+        item.textContent = task.text;
+        list.appendChild(item);
+      });
+      if (tasks.length > 3) {
+        const more = document.createElement("span");
+        more.className = "cal-cell-more";
+        more.textContent = `+${tasks.length - 3}`;
+        list.appendChild(more);
+      }
+      cell.appendChild(list);
+    }
+
+    cell.addEventListener("click", () => {
+      selectedDateKey = key;
+      renderCalendar();
+      renderSelectedDay();
+    });
+
+    calGrid.appendChild(cell);
+  }
+
+  renderSelectedDay();
+}
+
+function renderSelectedDay() {
+  if (!selectedDateKey) {
+    calDayLabel.textContent = "Tarih seç";
+    calInput.disabled = true;
+    calAdd.disabled = true;
+    calTasks.innerHTML = "";
+    return;
+  }
+
+  calDayLabel.textContent = formatDateLabel(selectedDateKey);
+  calInput.disabled = false;
+  calAdd.disabled = false;
+  calTasks.innerHTML = "";
+
+  const tasks = calendarTasks[selectedDateKey] || [];
+  tasks.forEach((task) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = `cal-task${task.done ? " is-done" : ""}`;
+    btn.textContent = task.text;
+    btn.addEventListener("click", () => {
+      task.done = !task.done;
+      saveCalendarTasks();
+      renderCalendar();
+    });
+    calTasks.appendChild(btn);
+  });
+}
+
+calPrev.addEventListener("click", () => {
+  calMonth -= 1;
+  if (calMonth < 0) {
+    calMonth = 11;
+    calYear -= 1;
+  }
+  renderCalendar();
+});
+
+calNext.addEventListener("click", () => {
+  calMonth += 1;
+  if (calMonth > 11) {
+    calMonth = 0;
+    calYear += 1;
+  }
+  renderCalendar();
+});
+
+calForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  if (!selectedDateKey) return;
+  const text = calInput.value.trim();
+  if (!text) return;
+
+  if (!calendarTasks[selectedDateKey]) calendarTasks[selectedDateKey] = [];
+  calendarTasks[selectedDateKey].push({
+    id: Date.now().toString(),
+    text,
+    done: false,
+  });
+  saveCalendarTasks();
+  calInput.value = "";
+  renderCalendar();
+});
+
+const KANBAN_STORAGE_KEY = "unutma-kanban-tasks";
+const KANBAN_COLUMNS = ["todo", "doing", "done"];
+const KANBAN_LABELS = {
+  todo: "Yapılacak",
+  doing: "Yapıyorum",
+  done: "Yaptım",
+};
+
+const kanbanForm = document.getElementById("kanban-form");
+const kanbanInput = document.getElementById("kanban-input");
+const kanbanLists = {
+  todo: document.getElementById("kanban-todo"),
+  doing: document.getElementById("kanban-doing"),
+  done: document.getElementById("kanban-done"),
+};
+const kanbanCounts = {
+  todo: document.getElementById("kanban-count-todo"),
+  doing: document.getElementById("kanban-count-doing"),
+  done: document.getElementById("kanban-count-done"),
+};
+
+function loadKanbanTasks() {
+  try {
+    const saved = localStorage.getItem(KANBAN_STORAGE_KEY);
+    if (!saved) return [];
+    const parsed = JSON.parse(saved);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    localStorage.removeItem(KANBAN_STORAGE_KEY);
+    return [];
+  }
+}
+
+function saveKanbanTasks() {
+  localStorage.setItem(KANBAN_STORAGE_KEY, JSON.stringify(kanbanTasks));
+}
+
+let kanbanTasks = loadKanbanTasks();
+
+function moveKanbanTask(id, targetColumn) {
+  const task = kanbanTasks.find((item) => item.id === id);
+  if (!task || task.column === targetColumn) return;
+  task.column = targetColumn;
+  saveKanbanTasks();
+  renderKanban();
+}
+
+function deleteKanbanTask(id) {
+  kanbanTasks = kanbanTasks.filter((item) => item.id !== id);
+  saveKanbanTasks();
+  renderKanban();
+}
+
+function createKanbanCard(task) {
+  const card = document.createElement("article");
+  card.className = "kanban-card";
+  card.draggable = true;
+  card.dataset.id = task.id;
+
+  card.addEventListener("dragstart", (e) => {
+    e.dataTransfer.setData("text/plain", task.id);
+    e.dataTransfer.effectAllowed = "move";
+    card.classList.add("is-dragging");
+  });
+
+  card.addEventListener("dragend", () => {
+    card.classList.remove("is-dragging");
+    document.querySelectorAll(".kanban-column.is-drop-target").forEach((col) => {
+      col.classList.remove("is-drop-target");
+    });
+  });
+
+  const text = document.createElement("span");
+  text.className = "kanban-card-text";
+  text.textContent = task.text;
+
+  const actions = document.createElement("div");
+  actions.className = "kanban-card-actions";
+
+  KANBAN_COLUMNS.filter((column) => column !== task.column).forEach((column) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "kanban-move";
+    btn.textContent = KANBAN_LABELS[column];
+    btn.addEventListener("click", () => moveKanbanTask(task.id, column));
+    actions.appendChild(btn);
+  });
+
+  const del = document.createElement("button");
+  del.type = "button";
+  del.className = "kanban-delete";
+  del.textContent = "Sil";
+  del.addEventListener("click", () => deleteKanbanTask(task.id));
+  actions.appendChild(del);
+
+  card.append(text, actions);
+  return card;
+}
+
+function setupKanbanDropZones() {
+  document.querySelectorAll(".kanban-column").forEach((columnEl) => {
+    const column = columnEl.dataset.column;
+
+    columnEl.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      columnEl.classList.add("is-drop-target");
+    });
+
+    columnEl.addEventListener("dragleave", (e) => {
+      if (!columnEl.contains(e.relatedTarget)) {
+        columnEl.classList.remove("is-drop-target");
+      }
+    });
+
+    columnEl.addEventListener("drop", (e) => {
+      e.preventDefault();
+      columnEl.classList.remove("is-drop-target");
+      const id = e.dataTransfer.getData("text/plain");
+      if (id) moveKanbanTask(id, column);
+    });
+  });
+}
+
+setupKanbanDropZones();
+
+function renderKanban() {
+  KANBAN_COLUMNS.forEach((column) => {
+    kanbanLists[column].innerHTML = "";
+    const items = kanbanTasks.filter((task) => task.column === column);
+    kanbanCounts[column].textContent = String(items.length);
+    items.forEach((task) => {
+      kanbanLists[column].appendChild(createKanbanCard(task));
+    });
+  });
+}
+
+kanbanForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const text = kanbanInput.value.trim();
+  if (!text) return;
+
+  kanbanTasks.push({
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    text,
+    column: "todo",
+  });
+  saveKanbanTasks();
+  kanbanInput.value = "";
+  renderKanban();
+});

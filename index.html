@@ -17,14 +17,84 @@
       <p class="brand-sub">Aklındakileri buraya bırak.</p>
     </header>
 
-    <form id="todo-form">
-      <input type="text" id="todo-input" placeholder="Yeni madde yaz..." autocomplete="off">
-      <button type="submit">Ekle</button>
-    </form>
+    <nav class="view-tabs" aria-label="Görünüm sekmeleri">
+      <button type="button" class="view-tab is-active" data-view="todo">To-Do List</button>
+      <button type="button" class="view-tab" data-view="calendar">Takvim</button>
+      <button type="button" class="view-tab" data-view="kanban">Kanban</button>
+    </nav>
 
-    <button type="button" id="clear-all" class="clear-all-btn">Tümünü Sil</button>
+    <section class="view-panel is-active" id="view-todo" data-view="todo">
+      <form id="todo-form">
+        <input type="text" id="todo-input" placeholder="Yeni madde yaz..." autocomplete="off">
+        <button type="submit">Ekle</button>
+      </form>
 
-    <ul id="todo-list"></ul>
+      <button type="button" id="clear-all" class="clear-all-btn">Tümünü Sil</button>
+
+      <ul id="todo-list"></ul>
+    </section>
+
+    <section class="view-panel" id="view-calendar" data-view="calendar" hidden>
+      <div class="calendar-shell">
+        <div class="calendar-day-panel">
+          <h3 class="calendar-day-label" id="cal-day-label">Tarih seç</h3>
+          <form id="cal-form" class="calendar-form">
+            <input type="text" id="cal-input" placeholder="Bu güne görev ekle..." autocomplete="off" disabled>
+            <button type="submit" id="cal-add" disabled>Ekle</button>
+          </form>
+          <ul class="calendar-tasks" id="cal-tasks"></ul>
+          <p class="calendar-hint">Göreve tıklayarak bitti olarak işaretle.</p>
+        </div>
+
+        <div class="calendar-main">
+          <div class="calendar-toolbar">
+            <button type="button" id="cal-prev" aria-label="Önceki ay">‹</button>
+            <h2 class="calendar-title" id="cal-title">Mart 2026</h2>
+            <button type="button" id="cal-next" aria-label="Sonraki ay">›</button>
+          </div>
+
+          <div class="calendar-weekdays" aria-hidden="true">
+            <span>Pzt</span><span>Sal</span><span>Çar</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span>
+          </div>
+          <div class="calendar-grid" id="cal-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view-panel" id="view-kanban" data-view="kanban" hidden>
+      <div class="kanban-shell">
+        <form id="kanban-form" class="kanban-form">
+          <input type="text" id="kanban-input" placeholder="Yeni kanban görevi..." autocomplete="off">
+          <button type="submit">Ekle</button>
+        </form>
+
+        <div class="kanban-board">
+          <div class="kanban-column" data-column="todo">
+            <header class="kanban-column-head">
+              <h3>Yapılacak</h3>
+              <span class="kanban-count" id="kanban-count-todo">0</span>
+            </header>
+            <div class="kanban-cards" id="kanban-todo"></div>
+          </div>
+
+          <div class="kanban-column" data-column="doing">
+            <header class="kanban-column-head">
+              <h3>Yapıyorum</h3>
+              <span class="kanban-count" id="kanban-count-doing">0</span>
+            </header>
+            <div class="kanban-cards" id="kanban-doing"></div>
+          </div>
+
+          <div class="kanban-column" data-column="done">
+            <header class="kanban-column-head">
+              <h3>Yaptım</h3>
+              <span class="kanban-count" id="kanban-count-done">0</span>
+            </header>
+            <div class="kanban-cards" id="kanban-done"></div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <aside class="pomodoro" id="pomodoro">

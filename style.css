@@ -76,6 +76,479 @@ main {
   position: relative;
   z-index: 1;
   animation: rise 0.7s ease both;
+  transition: width 0.25s ease;
+}
+
+main.is-calendar {
+  width: min(980px, 100%);
+}
+
+main.is-kanban {
+  width: min(980px, 100%);
+}
+
+.view-tabs {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+  padding: 0.3rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(250, 246, 240, 0.75);
+  box-shadow: var(--shadow);
+}
+
+.view-tab {
+  flex: 1;
+  border: none;
+  border-radius: 999px;
+  padding: 0.55rem 0.7rem;
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.view-tab.is-active {
+  background: linear-gradient(160deg, var(--leaf), var(--sage-deep));
+  color: #f7f3eb;
+}
+
+.view-panel[hidden] {
+  display: none !important;
+}
+
+.view-placeholder {
+  text-align: center;
+  padding: 2.5rem 1.25rem;
+  border: 1px dashed var(--sage-light);
+  border-radius: var(--radius);
+  background: rgba(250, 246, 240, 0.45);
+}
+
+.view-placeholder-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--sage-deep);
+  margin-bottom: 0.4rem;
+}
+
+.view-placeholder-text {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+
+.kanban-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.kanban-form {
+  display: flex;
+  gap: 0.55rem;
+  padding: 0.45rem;
+  background: var(--parchment);
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow);
+}
+
+.kanban-form input {
+  flex: 1;
+  padding: 0.85rem 0.95rem;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.98rem;
+  outline: none;
+}
+
+.kanban-form button {
+  padding: 0.85rem 1.25rem;
+  border: none;
+  border-radius: var(--radius);
+  background: linear-gradient(160deg, var(--leaf), var(--sage-deep));
+  color: #f7f3eb;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  align-items: start;
+}
+
+.kanban-column {
+  min-height: 18rem;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(250, 246, 240, 0.72);
+  box-shadow: var(--shadow);
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.kanban-column.is-drop-target {
+  border-color: var(--sage);
+  background: rgba(143, 166, 125, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(85, 104, 72, 0.2);
+}
+
+.kanban-column-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.kanban-column-head h3 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--sage-deep);
+}
+
+.kanban-count {
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: rgba(111, 133, 96, 0.18);
+  color: var(--sage-deep);
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kanban-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-height: 4rem;
+}
+
+.kanban-cards:empty::before {
+  content: "Boş sütun";
+  display: block;
+  text-align: center;
+  padding: 1.2rem 0.5rem;
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  border: 1px dashed var(--sage-light);
+  border-radius: 10px;
+}
+
+.kanban-card {
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--parchment);
+  cursor: grab;
+  user-select: none;
+  transition: opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.kanban-card:active {
+  cursor: grabbing;
+}
+
+.kanban-card.is-dragging {
+  opacity: 0.45;
+  transform: scale(0.98);
+  box-shadow: 0 8px 18px rgba(47, 58, 44, 0.12);
+}
+
+.kanban-card-text {
+  display: block;
+  margin-bottom: 0.65rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--ink);
+  word-break: break-word;
+}
+
+.kanban-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.kanban-card-actions button {
+  border: none;
+  border-radius: 8px;
+  padding: 0.35rem 0.55rem;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.kanban-move {
+  background: rgba(111, 133, 96, 0.18);
+  color: var(--sage-deep);
+}
+
+.kanban-move:hover {
+  background: rgba(111, 133, 96, 0.3);
+}
+
+.kanban-delete {
+  background: var(--rose);
+  color: #fff;
+  margin-left: auto;
+}
+
+.calendar-shell {
+  display: grid;
+  grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.calendar-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.calendar-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.calendar-toolbar button {
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--parchment);
+  color: var(--sage-deep);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.calendar-title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--sage-deep);
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.35rem;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.35rem;
+}
+
+.cal-cell {
+  min-height: 4.6rem;
+  padding: 0.3rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(250, 246, 240, 0.72);
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-body);
+  color: var(--ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.cal-cell:hover {
+  border-color: rgba(111, 133, 96, 0.5);
+}
+
+.cal-cell.is-muted {
+  opacity: 0.42;
+}
+
+.cal-cell.is-today {
+  box-shadow: inset 0 0 0 1.5px var(--sage);
+}
+
+.cal-cell.is-selected {
+  border-color: var(--sage-deep);
+  background: rgba(143, 166, 125, 0.22);
+}
+
+.cal-cell-day {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.cal-cell-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+.cal-cell-task {
+  display: block;
+  padding: 0.12rem 0.28rem;
+  border-radius: 5px;
+  background: rgba(111, 133, 96, 0.22);
+  color: var(--sage-deep);
+  font-size: 0.62rem;
+  font-weight: 500;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.cal-cell-task.is-done {
+  text-decoration: line-through;
+  background: rgba(92, 106, 86, 0.12);
+  color: var(--ink-soft);
+  opacity: 0.8;
+}
+
+.cal-cell-more {
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  padding-left: 0.15rem;
+}
+
+.calendar-day-panel {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(250, 246, 240, 0.82);
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+}
+
+.calendar-day-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--sage-deep);
+  margin-bottom: 0.75rem;
+}
+
+.calendar-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 0.85rem;
+}
+
+.calendar-form input {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--parchment);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  outline: none;
+}
+
+.calendar-form button {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(160deg, var(--leaf), var(--sage-deep));
+  color: #f7f3eb;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.calendar-form button:disabled,
+.calendar-form input:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.calendar-tasks {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-height: 2rem;
+}
+
+.calendar-tasks:empty::before {
+  content: "Bu tarihte henüz görev yok.";
+  display: block;
+  text-align: center;
+  padding: 0.9rem 0.5rem;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
+.cal-task {
+  width: 100%;
+  text-align: left;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--parchment);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.cal-task:hover {
+  background: #fffaf4;
+}
+
+.cal-task.is-done {
+  text-decoration: line-through;
+  color: var(--ink-soft);
+  opacity: 0.72;
+}
+
+.calendar-hint {
+  margin-top: 0.7rem;
+  font-size: 0.75rem;
+  color: var(--ink-soft);
 }
 
 @keyframes rise {
@@ -619,6 +1092,33 @@ h1 {
     transform: none;
     width: min(460px, 100%);
     margin: 2rem auto 0;
+  }
+
+  .calendar-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-day-panel {
+    position: static;
+    max-height: none;
+    order: -1;
+  }
+
+  .calendar-form {
+    flex-direction: row;
+  }
+
+  .calendar-form input {
+    flex: 1;
+    width: auto;
+  }
+
+  .calendar-form button {
+    width: auto;
+  }
+
+  .kanban-board {
+    grid-template-columns: 1fr;
   }
 }
 

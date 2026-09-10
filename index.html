@@ -4,18 +4,86 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Unutma</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main>
-    <h1>Unutma</h1>
+    <header class="brand">
+      <p class="brand-mark">liste</p>
+      <h1>Unutma</h1>
+      <p class="brand-sub">Aklındakileri buraya bırak.</p>
+    </header>
+
     <form id="todo-form">
-      <input type="text" id="todo-input" placeholder="Yeni madde..." autocomplete="off">
+      <input type="text" id="todo-input" placeholder="Yeni madde yaz..." autocomplete="off">
       <button type="submit">Ekle</button>
     </form>
+
     <button type="button" id="clear-all" class="clear-all-btn">Tümünü Sil</button>
+
     <ul id="todo-list"></ul>
   </main>
+
+  <aside class="pomodoro" id="pomodoro">
+    <div class="pomodoro-head">
+      <p class="pomodoro-label">Pomodoro</p>
+      <span class="pomodoro-badge" id="pomodoro-badge">Odak</span>
+    </div>
+
+    <div class="pomodoro-modes">
+      <button type="button" class="pomodoro-mode is-active" data-mode="focus">25 dk</button>
+      <button type="button" class="pomodoro-mode" data-mode="break">5 dk</button>
+    </div>
+
+    <div class="pomodoro-ring">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <circle class="pomodoro-track" cx="60" cy="60" r="52"></circle>
+        <circle class="pomodoro-progress" id="pomodoro-progress" cx="60" cy="60" r="52"></circle>
+      </svg>
+      <time class="pomodoro-time" id="pomodoro-time">25:00</time>
+    </div>
+
+    <div class="pomodoro-actions">
+      <button type="button" id="pomodoro-start">Başlat</button>
+      <button type="button" id="pomodoro-pause" disabled>Duraklat</button>
+      <button type="button" id="pomodoro-reset">Sıfırla</button>
+    </div>
+
+    <div class="pomodoro-length">
+      <div class="pomodoro-setting">
+        <span class="pomodoro-length-label">1 pomodoro</span>
+        <div class="pomodoro-length-control">
+          <button type="button" id="pomodoro-minus" aria-label="Dakikayı azalt">−</button>
+          <input type="number" id="pomodoro-minutes" min="1" max="120" value="25">
+          <span>dk</span>
+          <button type="button" id="pomodoro-plus" aria-label="Dakikayı artır">+</button>
+        </div>
+      </div>
+      <div class="pomodoro-setting">
+        <span class="pomodoro-length-label">Mola</span>
+        <div class="pomodoro-length-control">
+          <button type="button" id="break-minus" aria-label="Mola dakikasını azalt">−</button>
+          <input type="number" id="break-minutes" min="1" max="60" value="5">
+          <span>dk</span>
+          <button type="button" id="break-plus" aria-label="Mola dakikasını artır">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pomodoro-cycle">
+      <div class="pomodoro-dots" id="pomodoro-dots" aria-label="Tamamlanan pomodorolar">
+        <span class="pomodoro-dot"></span>
+        <span class="pomodoro-dot"></span>
+        <span class="pomodoro-dot"></span>
+        <span class="pomodoro-dot"></span>
+      </div>
+      <p class="pomodoro-cycle-note">4 pomodoro sonra 30 dk ara</p>
+    </div>
+  </aside>
+
   <script src="script.js"></script>
 </body>
 </html>
